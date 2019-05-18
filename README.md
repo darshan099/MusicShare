@@ -1,2 +1,3 @@
 # MusicShare
-Share your music with your loved ones! ♥
+Sync music with your loved ones! ♥ <br>
+Under development!

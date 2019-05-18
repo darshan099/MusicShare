@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "998726262791",
+    "firebase_url": "https://musicshare-240713.firebaseio.com",
+    "project_id": "musicshare-240713",
+    "storage_bucket": "musicshare-240713.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:998726262791:android:c120ec1241d293a6",
+        "android_client_info": {
+          "package_name": "com.example.darshanpc.musicshare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "998726262791-8ql4rs07l494qba01tbusejk9tkhjihg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.darshanpc.musicshare",
+            "certificate_hash": "a59a93f9a32c981e182fea853c2bd0baf2162e00"
+          }
+        },
+        {
+          "client_id": "998726262791-tc0rkvlbdv3q8nso5msdbb8vm8qp02ou.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCVDcCcC8iX5wKAhrcpO41QEIqtiuSjZM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "998726262791-tc0rkvlbdv3q8nso5msdbb8vm8qp02ou.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

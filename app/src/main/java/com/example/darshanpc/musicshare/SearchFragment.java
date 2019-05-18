@@ -1,6 +1,5 @@
 package com.example.darshanpc.musicshare;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -40,15 +39,10 @@ public class SearchFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.search_fragment,container,false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        View view=inflater.inflate(R.layout.search_fragment,container,false);
         savedinstancestate=savedInstanceState;
-        searchInput = (EditText)view.findViewById(R.id.search_input);
-        videosFound = (ListView)view.findViewById(R.id.videos_found);
+        searchInput = view.findViewById(R.id.search_input);
+        videosFound = view.findViewById(R.id.videos_found);
         playMedia=new PlayMedia();
         handler = new Handler();
         addClickListener();
@@ -63,7 +57,12 @@ public class SearchFragment extends Fragment {
                 return true;
             }
         });
+        return view;
+    }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
     }
     private void searchOnYoutube(final String keywords){
         new Thread(){
@@ -87,6 +86,7 @@ public class SearchFragment extends Fragment {
                 Toast.makeText(getContext(), searchResults.get(pos).getId(), Toast.LENGTH_SHORT).show();
                 String youtubeurl="http://youtube.com/watch?v="+searchResults.get(pos).getId();
                 playMedia.playVideoFromUrl(youtubeurl,getContext());
+                MainActivity.textViewSongName.setText(searchResults.get(pos).getTitle());
             }
 
         });

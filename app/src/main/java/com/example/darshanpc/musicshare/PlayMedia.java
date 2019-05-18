@@ -3,6 +3,7 @@ package com.example.darshanpc.musicshare;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.util.SparseArray;
 
@@ -67,12 +68,26 @@ public class PlayMedia {
                                     MainActivity.player.reset();
                                     MainActivity.player.setDataSource(getBestYtUrl.getUrl());
                                     MainActivity.player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                                    MainActivity.player.prepare();
-                                    MainActivity.player.start();
+                                    MainActivity.player.prepareAsync();
                                 }
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
+                            MainActivity.player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                                @Override
+                                public void onPrepared(MediaPlayer mp) {
+                                    MainActivity.player.start();
+                                    MainActivity.seekBarSong.setMax(MainActivity.player.getDuration());
+                                    double endtime=MainActivity.player.getDuration();
+                                    String seconds = String.valueOf(((int) endtime % 60000) / 1000);
+                                    String minutes = String.valueOf(((int) endtime / 60000));
+                                    if (seconds.length() == 1) {
+                                        MainActivity.textViewEndTime.setText("0" + minutes + ":0" + seconds);
+                                    } else {
+                                        MainActivity.textViewEndTime.setText("0" + minutes + ":" + seconds);
+                                    }
+                                }
+                            });
                         }
                     }
                 }.extract(downloadurl,true,true);
