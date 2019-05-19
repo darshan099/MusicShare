@@ -87,6 +87,8 @@ public class SearchFragment extends Fragment {
                 String youtubeurl="http://youtube.com/watch?v="+searchResults.get(pos).getId();
                 playMedia.playVideoFromUrl(youtubeurl,getContext());
                 MainActivity.textViewSongName.setText(searchResults.get(pos).getTitle());
+                FirebaseHelper firebaseHelper=new FirebaseHelper();
+                firebaseHelper.addSong(searchResults.get(pos).getTitle(),getContext());
             }
 
         });

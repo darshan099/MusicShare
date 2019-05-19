@@ -26,7 +26,7 @@ public class PlayMedia {
     }
     private YtFile getBestStreamLink(SparseArray<YtFile> ytFiles)
     {
-        int[] itags = new int[]{249,250,251,171,172,139,140,141};
+        int[] itags = new int[]{249,171,139,250,251,172,140,141};
         if (ytFiles.get(itags[0]) != null) {
             return ytFiles.get(itags[0]);
         } else if (ytFiles.get(itags[1]) != null) {
@@ -86,6 +86,12 @@ public class PlayMedia {
                                     } else {
                                         MainActivity.textViewEndTime.setText("0" + minutes + ":" + seconds);
                                     }
+                                }
+                            });
+                            MainActivity.player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                @Override
+                                public void onCompletion(MediaPlayer mp) {
+                                    //TODO: get next song title and put it as current song
                                 }
                             });
                         }
