@@ -8,6 +8,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.media.MediaPlayer;
 import android.support.v4.view.ViewPager;
@@ -27,7 +28,13 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.sql.Time;
@@ -109,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked)
                 {
+
                     long time=System.currentTimeMillis();
                     String time_string=String.valueOf(time);
                     editTextEnterId.setVisibility(View.GONE);
@@ -123,7 +131,28 @@ public class MainActivity extends AppCompatActivity {
                 FirebaseHelper firebaseHelper=new FirebaseHelper();
                 SharedPreferences.Editor editor=preferences.edit();
                 if(editTextEnterId.getVisibility()==View.VISIBLE) {
+                    DatabaseReference databaseReference= FirebaseDatabase.getInstance().getReference();
+                    databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            if(dataSnapshot.hasChild(editTextEnterId.getText().toString()))
+                            {
+                                Log.i("db","present");
+                                firebaseHelper.enterMemberIntoRoomId(editTextEnterId.getText().toString(),MainActivity.this);
+                                dialog.dismiss();
 
+                            }
+                            else
+                            {
+                                Log.i("db","not present");
+                                Toast.makeText(MainActivity.this, "Invalid roomid. Enter Again!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
                     Log.i("RoomId", editTextEnterId.getText().toString());
                 }
                 else if(textViewCreateId.getVisibility()==View.VISIBLE) {
@@ -131,10 +160,10 @@ public class MainActivity extends AppCompatActivity {
                     editor.putString("roomid",textViewCreateId.getText().toString());
                     editor.putBoolean("isRoomCreator",true);
                     Log.i("RoomId", textViewCreateId.getText().toString());
+                    dialog.dismiss();
                 }
                 editor.putBoolean("isRoomIdSelected",true);
                 editor.apply();
-                dialog.dismiss();
             }
         });
 
