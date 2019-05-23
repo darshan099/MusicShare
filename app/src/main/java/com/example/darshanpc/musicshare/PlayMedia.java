@@ -2,16 +2,29 @@ package com.example.darshanpc.musicshare;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.SparseArray;
+import android.widget.Toast;
+
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
 import at.huber.youtubeExtractor.YtFile;
+
+import static com.example.darshanpc.musicshare.MainActivity.currentSong;
+import static com.example.darshanpc.musicshare.MainActivity.currentSongPos;
+import static com.example.darshanpc.musicshare.MainActivity.currentSongUrl;
+import static com.example.darshanpc.musicshare.MainActivity.textViewSongName;
 
 
 public class PlayMedia {
@@ -92,6 +105,22 @@ public class PlayMedia {
                                 @Override
                                 public void onCompletion(MediaPlayer mp) {
                                     //TODO: get next song title and put it as current song
+                                    if(currentSongPos==HomeFragment.songList.size()-1)
+                                    {
+                                        Toast.makeText(context, "End Of Songs! Add new ones!", Toast.LENGTH_SHORT).show();
+                                    }
+                                    else {
+                                        SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(context);
+                                        currentSongPos=currentSongPos+1;
+                                        DatabaseReference databaseReference= FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid",""));
+                                        Map<String,Object> taskMap=new HashMap<>();
+                                        taskMap.put("currentSongPosition",String.valueOf(currentSongPos));
+                                        taskMap.put("currentSong",HomeFragment.songList.get(currentSongPos));
+                                        taskMap.put("currentSongUrl",HomeFragment.songListUrl.get(currentSongPos));
+                                        databaseReference.updateChildren(taskMap);
+                                        playVideoFromUrl(currentSongUrl,context);
+                                        textViewSongName.setText(currentSong);
+                                    }
                                 }
                             });
                         }

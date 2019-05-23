@@ -2,10 +2,13 @@ package com.example.darshanpc.musicshare;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -38,10 +41,19 @@ import com.google.firebase.database.ValueEventListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.sql.Time;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+
+import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity {
     public static MediaPlayer player;
+    int init=1;
+    long onBackPressed;
+    PlayMedia playMedia;
+    public static String currentSong,currentSongUrl;
+    public static int currentSongPos,isButtonPressed;
     Dialog dialog;
     ImageView slideuparrow;
     ImageButton imageButtonPlay,imageButtonPause,imageButtonNext,imageButtonPrevious;
@@ -71,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
 
         player=new MediaPlayer();
 
+        playMedia=new PlayMedia();
+
         myHandler = new Handler();
         seekBarSong.setProgress((int) starttime);
         myHandler.postDelayed(UpdateSongTime, 100);
@@ -90,105 +104,62 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
 
 
-        dialog=new Dialog(this);
-        dialog.setContentView(R.layout.alertdialog_unique_key);
-        dialog.setTitle("Create or Join your music room!");
-        RadioButton radioButtonJoin=dialog.findViewById(R.id.radiobuttonJoinRoom);
-        RadioButton radioButtonCreate=dialog.findViewById(R.id.radiobuttonCreateRoom);
-        EditText textViewCreateId=dialog.findViewById(R.id.generateRoomId);
-        EditText editTextEnterId=dialog.findViewById(R.id.enterRoomId);
-        Button submitRoomId=dialog.findViewById(R.id.submitRoomId);
-        dialog.setCancelable(false);
-        dialog.show();
-        Objects.requireNonNull(dialog.getWindow()).setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-        radioButtonJoin.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked)
-                {
-                    textViewCreateId.setVisibility(View.GONE);
-                    editTextEnterId.setVisibility(View.VISIBLE);
-                }
-            }
-        });
 
-        radioButtonCreate.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if(isChecked)
-                {
 
-                    long time=System.currentTimeMillis();
-                    String time_string=String.valueOf(time);
-                    editTextEnterId.setVisibility(View.GONE);
-                    textViewCreateId.setVisibility(View.VISIBLE);
-                    textViewCreateId.setText(time_string);
-                }
-            }
-        });
-        submitRoomId.setOnClickListener(new View.OnClickListener() {
+        //-------------get song details from database------------
+        DatabaseReference databaseReferenceGetSong=FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid",""));
+        databaseReferenceGetSong.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onClick(View v) {
-                FirebaseHelper firebaseHelper=new FirebaseHelper();
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                currentSongPos=Integer.parseInt(Objects.requireNonNull(dataSnapshot.child("currentSongPosition").getValue()).toString());
+                currentSong=Objects.requireNonNull(dataSnapshot.child("currentSong").getValue()).toString();
+                currentSongUrl=Objects.requireNonNull(dataSnapshot.child("currentSongUrl").getValue()).toString();
+                isButtonPressed=Integer.parseInt(Objects.requireNonNull(dataSnapshot.child("isButtonPressed").getValue()).toString());
+                Log.i("details", Objects.requireNonNull(dataSnapshot.child("currentSong").getValue()).toString());
+                Log.i("details", Objects.requireNonNull(dataSnapshot.child("currentSongPosition").getValue()).toString());
+                Log.i("details", Objects.requireNonNull(dataSnapshot.child("currentSongUrl").getValue()).toString());
                 SharedPreferences.Editor editor=preferences.edit();
-                if(editTextEnterId.getVisibility()==View.VISIBLE) {
-                    DatabaseReference databaseReference= FirebaseDatabase.getInstance().getReference();
-                    databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            if(dataSnapshot.hasChild(editTextEnterId.getText().toString()))
-                            {
-                                Log.i("db","present");
-                                firebaseHelper.enterMemberIntoRoomId(editTextEnterId.getText().toString(),MainActivity.this);
-                                dialog.dismiss();
-
-                            }
-                            else
-                            {
-                                Log.i("db","not present");
-                                Toast.makeText(MainActivity.this, "Invalid roomid. Enter Again!", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                        @Override
-                        public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                        }
-                    });
-                    Log.i("RoomId", editTextEnterId.getText().toString());
+                editor.putInt("currentSongPosition",currentSongPos);
+                editor.putString("currentSong",currentSong);
+                editor.putString("currentSongUrl",currentSongUrl);
+                editor.commit();
+                if(currentSongPos==-1 && HomeFragment.songList.size()>0)
+                {
+                    Log.i("i am here", "yes");
+                    currentSongPos=currentSongPos+1;
+                    DatabaseReference databaseReference=FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid",""));
+                    Map<String,Object> taskMap=new HashMap<>();
+                    taskMap.put("currentSongPosition",String.valueOf(currentSongPos));
+                    taskMap.put("currentSong",HomeFragment.songList.get(currentSongPos));
+                    taskMap.put("currentSongUrl",HomeFragment.songListUrl.get(currentSongPos));
+                    databaseReference.updateChildren(taskMap);
+                    playMedia.playVideoFromUrl(HomeFragment.songListUrl.get(currentSongPos),MainActivity.this);
+                    textViewSongName.setText(HomeFragment.songList.get(currentSongPos));
                 }
-                else if(textViewCreateId.getVisibility()==View.VISIBLE) {
-                    firebaseHelper.addRoomId(textViewCreateId.getText().toString(),MainActivity.this);
-                    editor.putString("roomid",textViewCreateId.getText().toString());
-                    editor.putBoolean("isRoomCreator",true);
-                    Log.i("RoomId", textViewCreateId.getText().toString());
-                    dialog.dismiss();
+                else
+                {
+                    if(isButtonPressed==1) {
+                        DatabaseReference databaseReference=FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid",""));
+                        Map<String,Object> taskMap=new HashMap<>();
+                        taskMap.put("isButtonPressed","0");
+                        databaseReference.updateChildren(taskMap);
+                        playMedia.playVideoFromUrl(currentSongUrl, MainActivity.this);
+                        textViewSongName.setText(currentSong);
+                    }
+                    else if(init==1 && HomeFragment.songList.size()>0)
+                    {
+                        playMedia.playVideoFromUrl(HomeFragment.songListUrl.get(currentSongPos),MainActivity.this);
+                        textViewSongName.setText(HomeFragment.songList.get(currentSongPos));
+                        init=0;
+                    }
                 }
-                editor.putBoolean("isRoomIdSelected",true);
-                editor.apply();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
             }
         });
-
-
-        if(!preferences.getBoolean("firsttime",false))
-        {
-            AlertDialog.Builder builder=new AlertDialog.Builder(this);
-            builder.setTitle("Whats your nickname?");
-            EditText addUsername=new EditText(this);
-            builder.setView(addUsername);
-            builder.setCancelable(false);
-            builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    String username=addUsername.getText().toString();
-                    SharedPreferences.Editor editor=preferences.edit();
-                    editor.putBoolean("firsttime",true);
-                    editor.putString("username",username);
-                    editor.apply();
-
-                }
-            });
-            AlertDialog alertDialog=builder.create();
-            alertDialog.show();
-        }
 
 
 
@@ -247,6 +218,47 @@ public class MainActivity extends AppCompatActivity {
                 imageButtonPause.setVisibility(View.GONE);
             }
         });
+        //-------------------------next button listener---------------------
+        imageButtonNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(currentSongPos==HomeFragment.songList.size()-1)
+                {
+                    Toast.makeText(MainActivity.this, "End Of Songs! Add new ones!", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    currentSongPos=currentSongPos+1;
+                    DatabaseReference databaseReference=FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid",""));
+                    Map<String,Object> taskMap=new HashMap<>();
+                    taskMap.put("currentSongPosition",String.valueOf(currentSongPos));
+                    taskMap.put("currentSong",HomeFragment.songList.get(currentSongPos));
+                    taskMap.put("currentSongUrl",HomeFragment.songListUrl.get(currentSongPos));
+                    taskMap.put("isButtonPressed","1");
+                    databaseReference.updateChildren(taskMap);
+                }
+            }
+        });
+
+        //-------------------------previous button listener---------------
+        imageButtonPrevious.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(currentSongPos==0)
+                {
+                    Toast.makeText(MainActivity.this, "Starting of songs", Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    currentSongPos=currentSongPos-1;
+                    DatabaseReference databaseReference=FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid",""));
+                    Map<String,Object> taskMap=new HashMap<>();
+                    taskMap.put("currentSongPosition",String.valueOf(currentSongPos));
+                    taskMap.put("currentSong",HomeFragment.songList.get(currentSongPos));
+                    taskMap.put("currentSongUrl",HomeFragment.songListUrl.get(currentSongPos));
+                    taskMap.put("isButtonPressed","1");
+                    databaseReference.updateChildren(taskMap);
+                }
+            }
+        });
         //-------------------------Seekbar listener------------------------
         seekBarSong.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -290,5 +302,43 @@ public class MainActivity extends AppCompatActivity {
             myHandler.postDelayed(this, 100);
         }
     };
+    //-----------------check internet connection-------------------------
+    public boolean isNetworkAvailable()
+    {
+        ConnectivityManager connectivityManager=(ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo=connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo!=null && activeNetworkInfo.isConnected();
+    }
+    public void getCurrentSongDetails(DataSnapshot dataSnapshot)
+    {
+        if(dataSnapshot!=null) {
+            for (DataSnapshot ds : dataSnapshot.getChildren()) {
+                String songPos, songName, songYoutubeUrl;
+                songPos = Objects.requireNonNull(ds.child("currentSongPosition").getValue()).toString();
+                songName = Objects.requireNonNull(ds.child("currentSong").getValue()).toString();
+                songYoutubeUrl = Objects.requireNonNull(ds.child("currentSongUrl").getValue()).toString();
+                Log.i("songdetails", songPos);
+                Log.i("songdetails", songName);
+                Log.i("songdetails", songYoutubeUrl);
+            }
+        }
+    }
+    @Override
+    public void onBackPressed()
+    {
+        if(slidingPanelLayout.getPanelState()==SlidingUpPanelLayout.PanelState.EXPANDED)
+        {
+            slidingPanelLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+        }
+        else if(onBackPressed+2000 > System.currentTimeMillis())
+        {
+            super.onBackPressed();
+            return;
+        }
+        else {
+            Toast.makeText(this, "Press Back Again!", Toast.LENGTH_SHORT).show();
+            onBackPressed=System.currentTimeMillis();
+        }
+    }
 
 }

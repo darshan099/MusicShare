@@ -15,17 +15,27 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Members:"/>
+        <TextView
             android:layout_width="0dp"
-            android:layout_weight=".8"
+            android:layout_weight=".7"
+            android:gravity="center"
             android:layout_height="match_parent"
             android:id="@+id/room_members"/>
         <Button
             android:layout_width="0dp"
-            android:layout_weight=".2"
+            android:layout_weight=".3"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:text="Leave"
             android:id="@+id/room_leave"/>
     </LinearLayout>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Songs List:"/>
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

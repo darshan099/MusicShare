@@ -5,6 +5,8 @@
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:stackFromBottom="true"
+        android:transcriptMode="alwaysScroll"
         android:layout_above="@+id/chat_items"
         android:id="@+id/chat_list"/>
     <LinearLayout

@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -24,6 +25,7 @@ import java.util.List;
 
 public class SearchFragment extends Fragment {
     private EditText searchInput;
+    Button buttonSearch;
     PlayMedia playMedia;
     private ListView videosFound;
     Bundle savedinstancestate;
@@ -42,19 +44,15 @@ public class SearchFragment extends Fragment {
         View view=inflater.inflate(R.layout.search_fragment,container,false);
         savedinstancestate=savedInstanceState;
         searchInput = view.findViewById(R.id.search_input);
+        buttonSearch= view.findViewById(R.id.search_button);
         videosFound = view.findViewById(R.id.videos_found);
         playMedia=new PlayMedia();
         handler = new Handler();
         addClickListener();
-
-        searchInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        buttonSearch.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if(actionId == EditorInfo.IME_ACTION_DONE){
-                    searchOnYoutube(v.getText().toString());
-                    return false;
-                }
-                return true;
+            public void onClick(View v) {
+                searchOnYoutube(searchInput.getText().toString());
             }
         });
         return view;
@@ -85,8 +83,8 @@ public class SearchFragment extends Fragment {
                                     long id) {
                 Toast.makeText(getContext(), searchResults.get(pos).getId(), Toast.LENGTH_SHORT).show();
                 String youtubeurl="http://youtube.com/watch?v="+searchResults.get(pos).getId();
-                playMedia.playVideoFromUrl(youtubeurl,getContext());
-                MainActivity.textViewSongName.setText(searchResults.get(pos).getTitle());
+                //playMedia.playVideoFromUrl(youtubeurl,getContext());
+                //MainActivity.textViewSongName.setText(searchResults.get(pos).getTitle());
                 FirebaseHelper firebaseHelper=new FirebaseHelper();
                 firebaseHelper.addSong(searchResults.get(pos).getTitle(),youtubeurl,getContext());
             }

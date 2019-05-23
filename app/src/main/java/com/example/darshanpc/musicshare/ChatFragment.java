@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +14,14 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.w3c.dom.Text;
 
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 
 public class ChatFragment extends Fragment {
     Button sendMessageButton;
@@ -57,8 +61,8 @@ public class ChatFragment extends Fragment {
         arrayAdapter.clear();
         conversation.setAdapter(arrayAdapter);
 
-        databaseReference= FirebaseDatabase.getInstance().getReference().child(roomid+"/chat");
-
+        databaseReference= FirebaseDatabase.getInstance().getReference().child(roomid).child("chat");
+        databaseReference.orderByKey().limitToLast(1);
         sendMessageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,25 +79,10 @@ public class ChatFragment extends Fragment {
             }
         });
 
-        databaseReference.addChildEventListener(new ChildEventListener() {
+        databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 updateConversation(dataSnapshot);
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                updateConversation(dataSnapshot);
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
             }
 
             @Override
@@ -112,14 +101,13 @@ public class ChatFragment extends Fragment {
     public void updateConversation(DataSnapshot dataSnapshot)
     {
         String message,user,conversation;
-        Iterator i = dataSnapshot.getChildren().iterator();
-        while (i.hasNext())
+        arrayAdapter.clear();
+        for(DataSnapshot ds: dataSnapshot.getChildren())
         {
-            message=(String)((DataSnapshot)i.next()).getValue();
-            user=(String)((DataSnapshot)i.next()).getValue();
+            message= Objects.requireNonNull(ds.child("message").getValue()).toString();
+            user= Objects.requireNonNull(ds.child("user").getValue()).toString();
             conversation=user+": "+message;
-            listConversation.add(conversation);
-            //arrayAdapter.insert(conversation,arrayAdapter.getCount());
+            arrayAdapter.insert(conversation,arrayAdapter.getCount());
             arrayAdapter.notifyDataSetChanged();
         }
     }
