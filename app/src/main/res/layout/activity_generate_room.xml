@@ -7,18 +7,22 @@
     android:layout_height="match_parent">
     <RadioGroup
         android:layout_width="match_parent"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
         android:id="@+id/radiobuttonGroupRoomId"
-        android:gravity="center"
+        android:padding="10dp"
         android:orientation="horizontal"
         android:layout_height="wrap_content">
         <RadioButton
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="0.5"
             android:checked="false"
             android:layout_height="wrap_content"
             android:id="@+id/radiobuttonCreateRoom"
             android:text="Create Room"/>
         <RadioButton
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="0.5"
             android:checked="true"
             android:layout_height="wrap_content"
             android:id="@+id/radiobuttonJoinRoom"
@@ -28,16 +32,32 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Enter Room Id"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
         android:visibility="visible"
         android:id="@+id/enterRoomId"/>
-    <EditText
-        android:editable="false"
+    <TextView
         android:textIsSelectable="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="20sp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
         android:visibility="gone"
         android:id="@+id/generateRoomId"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:padding="20dp"
+        android:layout_height="wrap_content"
+        android:text="@string/roomcreate"
+        android:visibility="gone"
+        android:id="@+id/room_create_hint"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:padding="20dp"
+        android:layout_height="wrap_content"
+        android:text="@string/roomjoin"
+        android:id="@+id/room_join_hint"/>
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

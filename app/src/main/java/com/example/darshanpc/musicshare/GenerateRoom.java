@@ -30,6 +30,7 @@ public class GenerateRoom extends AppCompatActivity {
 
     RadioButton radioButtonJoin,radioButtonCreate;
     TextView textViewCreateId;
+    TextView textViewRoomCreateHint,textViewRoomJoinHint;
     EditText editTextEnterId;
     Button submitRoomId;
     @Override
@@ -37,6 +38,8 @@ public class GenerateRoom extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_generate_room);
 
+        textViewRoomJoinHint=findViewById(R.id.room_join_hint);
+        textViewRoomCreateHint=findViewById(R.id.room_create_hint);
         radioButtonJoin=findViewById(R.id.radiobuttonJoinRoom);
         radioButtonCreate=findViewById(R.id.radiobuttonCreateRoom);
         textViewCreateId=findViewById(R.id.generateRoomId);
@@ -69,6 +72,8 @@ public class GenerateRoom extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked)
                 {
+                    textViewRoomJoinHint.setVisibility(View.VISIBLE);
+                    textViewRoomCreateHint.setVisibility(View.GONE);
                     textViewCreateId.setVisibility(View.GONE);
                     editTextEnterId.setVisibility(View.VISIBLE);
                 }
@@ -85,6 +90,8 @@ public class GenerateRoom extends AppCompatActivity {
                     editTextEnterId.setVisibility(View.GONE);
                     textViewCreateId.setVisibility(View.VISIBLE);
                     textViewCreateId.setText(time_string);
+                    textViewRoomJoinHint.setVisibility(View.GONE);
+                    textViewRoomCreateHint.setVisibility(View.VISIBLE);
                 }
             }
         });

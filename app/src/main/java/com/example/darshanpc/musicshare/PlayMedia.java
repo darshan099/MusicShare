@@ -117,9 +117,8 @@ public class PlayMedia {
                                         taskMap.put("currentSongPosition",String.valueOf(currentSongPos));
                                         taskMap.put("currentSong",HomeFragment.songList.get(currentSongPos));
                                         taskMap.put("currentSongUrl",HomeFragment.songListUrl.get(currentSongPos));
+                                        taskMap.put("isButtonPressed","1");
                                         databaseReference.updateChildren(taskMap);
-                                        playVideoFromUrl(currentSongUrl,context);
-                                        textViewSongName.setText(currentSong);
                                     }
                                 }
                             });

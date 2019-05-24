@@ -17,11 +17,18 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Members:"/>
+            android:textSize="20sp"
+            android:text="Members: "/>
         <TextView
             android:layout_width="0dp"
+            android:textSize="20sp"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
             android:layout_weight=".7"
-            android:gravity="center"
             android:layout_height="match_parent"
             android:id="@+id/room_members"/>
         <Button
@@ -35,7 +42,10 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Songs List:"/>
+        android:gravity="center"
+        android:padding="10dp"
+        android:textSize="20sp"
+        android:text="Songs List"/>
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"

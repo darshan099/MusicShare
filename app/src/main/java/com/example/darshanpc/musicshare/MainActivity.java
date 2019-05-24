@@ -3,7 +3,6 @@ package com.example.darshanpc.musicshare;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
@@ -15,20 +14,12 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.media.MediaPlayer;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,12 +31,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-import java.sql.Time;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-
-import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity {
     public static MediaPlayer player;
@@ -54,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
     PlayMedia playMedia;
     public static String currentSong,currentSongUrl;
     public static int currentSongPos,isButtonPressed;
-    Dialog dialog;
     ImageView slideuparrow;
     ImageButton imageButtonPlay,imageButtonPause,imageButtonNext,imageButtonPrevious;
     public static TextView textViewSongName,textViewStartTime,textViewEndTime;
@@ -135,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     databaseReference.updateChildren(taskMap);
                     playMedia.playVideoFromUrl(HomeFragment.songListUrl.get(currentSongPos),MainActivity.this);
                     textViewSongName.setText(HomeFragment.songList.get(currentSongPos));
+                    init=0;
                 }
                 else
                 {
@@ -185,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
-                slideuparrow.setAlpha(1 - slideOffset);
+                slideuparrow.setRotation(slideOffset*180);
 
             }
 

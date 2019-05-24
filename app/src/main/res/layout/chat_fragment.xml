@@ -17,14 +17,17 @@
         android:layout_height="wrap_content">
         <EditText
             android:layout_width="0dp"
-            android:layout_weight="0.8"
+            android:layout_weight="0.9"
+            android:hint="Enter message"
             android:layout_height="wrap_content"
             android:id="@+id/chat_text"/>
-        <Button
+        <ImageButton
             android:layout_width="0dp"
-            android:layout_weight="0.2"
-            android:layout_height="wrap_content"
+            android:layout_weight="0.1"
+            android:background="#00000000"
+            android:layout_gravity="center"
+            android:layout_height="match_parent"
             android:id="@+id/chat_send"
-            android:text="Send"/>
+            android:src="@drawable/ic_send_black_24dp"/>
     </LinearLayout>
 </RelativeLayout>

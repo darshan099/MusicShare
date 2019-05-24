@@ -5,15 +5,14 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -25,7 +24,7 @@ import java.util.List;
 
 public class SearchFragment extends Fragment {
     private EditText searchInput;
-    Button buttonSearch;
+    ImageButton buttonSearch;
     PlayMedia playMedia;
     private ListView videosFound;
     Bundle savedinstancestate;
@@ -81,10 +80,8 @@ public class SearchFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> av, View v, int pos,
                                     long id) {
-                Toast.makeText(getContext(), searchResults.get(pos).getId(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Song added!", Toast.LENGTH_SHORT).show();
                 String youtubeurl="http://youtube.com/watch?v="+searchResults.get(pos).getId();
-                //playMedia.playVideoFromUrl(youtubeurl,getContext());
-                //MainActivity.textViewSongName.setText(searchResults.get(pos).getTitle());
                 FirebaseHelper firebaseHelper=new FirebaseHelper();
                 firebaseHelper.addSong(searchResults.get(pos).getTitle(),youtubeurl,getContext());
             }

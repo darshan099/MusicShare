@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">MusicShare</string>
+    <string name="roomcreate">Copy the room id and click "Submit" button.Share the room id with your friends to join the room. You can also join the room with the same room id later!</string>
+    <string name="roomjoin">Enter the room id and join the room. You can join the room again with the same roomid if you accidently close the app.</string>
 </resources>
