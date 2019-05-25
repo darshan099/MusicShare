@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -22,7 +21,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class SearchFragment extends Fragment {
+public class SearchFragment extends Fragment implements Thread.UncaughtExceptionHandler{
     private EditText searchInput;
     ImageButton buttonSearch;
     PlayMedia playMedia;
@@ -95,8 +94,8 @@ public class SearchFragment extends Fragment {
                 if(convertView == null){
                     convertView = getLayoutInflater().inflate(R.layout.video_item, parent, false);
                 }
-                ImageView thumbnail = (ImageView)convertView.findViewById(R.id.video_thumbnail);
-                TextView title = (TextView)convertView.findViewById(R.id.video_title);
+                ImageView thumbnail = convertView.findViewById(R.id.video_thumbnail);
+                TextView title = convertView.findViewById(R.id.video_title);
 
                 VideoItem searchResult = searchResults.get(position);
 
@@ -107,5 +106,10 @@ public class SearchFragment extends Fragment {
         };
 
         videosFound.setAdapter(adapter);
+    }
+
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        Toast.makeText(getContext(), "Error occured. Probably due to Internet Disconnection", Toast.LENGTH_LONG).show();
     }
 }

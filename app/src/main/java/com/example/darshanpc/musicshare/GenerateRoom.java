@@ -84,7 +84,6 @@ public class GenerateRoom extends AppCompatActivity {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if(isChecked)
                 {
-
                     long time=System.currentTimeMillis();
                     String time_string=String.valueOf(time);
                     editTextEnterId.setVisibility(View.GONE);

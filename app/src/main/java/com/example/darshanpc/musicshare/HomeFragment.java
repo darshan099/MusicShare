@@ -3,7 +3,6 @@ package com.example.darshanpc.musicshare;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -28,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements Thread.UncaughtExceptionHandler{
     TextView textViewRoomId,textViewMembers;
     public static ArrayList<String> songList=new ArrayList<String>();
     public static ArrayList<String> songListUrl=new ArrayList<String>();
@@ -47,7 +46,8 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.home_fragment,container,false);
         songListView=view.findViewById(R.id.room_music_list);
-
+        songList.clear();
+        songListUrl.clear();
         songArrayAdapter=new ArrayAdapter(getContext(),android.R.layout.simple_list_item_1,songList);
         songArrayAdapter.clear();
         songListView.setAdapter(songArrayAdapter);
@@ -134,4 +134,8 @@ public class HomeFragment extends Fragment {
         textViewMembers.setText(stringMembers);
     }
 
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        Toast.makeText(getContext(), "Error occured. Probably due to Internet Disconnection", Toast.LENGTH_LONG).show();
+    }
 }

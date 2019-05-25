@@ -1,11 +1,11 @@
 package com.example.darshanpc.musicshare;
 
 import android.annotation.SuppressLint;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
@@ -31,13 +31,14 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AudioManager.OnAudioFocusChangeListener,Thread.UncaughtExceptionHandler{
     public static MediaPlayer player;
-    int init=1;
+    int init=1,audio_play_result;
     long onBackPressed;
     PlayMedia playMedia;
     public static String currentSong,currentSongUrl;
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     ImageButton imageButtonPlay,imageButtonPause,imageButtonNext,imageButtonPrevious;
     public static TextView textViewSongName,textViewStartTime,textViewEndTime;
     public static SeekBar seekBarSong;
+    AudioManager audioManager;
     Handler myHandler;
     TabLayout tabLayout;
     double starttime=0;
@@ -57,20 +59,24 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         slidingPanelLayout = findViewById(R.id.sliding_panel);
-        tabLayout=findViewById(R.id.tabs);
-        slideuparrow=findViewById(R.id.slideuparrow);
-        imageButtonPlay=findViewById(R.id.song_play);
-        imageButtonPause=findViewById(R.id.song_pause);
-        imageButtonNext=findViewById(R.id.song_next);
-        imageButtonPrevious=findViewById(R.id.song_previous);
-        textViewSongName=findViewById(R.id.song_name);
-        textViewStartTime=findViewById(R.id.seekbar_start);
-        textViewEndTime=findViewById(R.id.seekbar_end);
-        seekBarSong=findViewById(R.id.song_seekbar);
+        tabLayout = findViewById(R.id.tabs);
+        slideuparrow = findViewById(R.id.slideuparrow);
+        imageButtonPlay = findViewById(R.id.song_play);
+        imageButtonPause = findViewById(R.id.song_pause);
+        imageButtonNext = findViewById(R.id.song_next);
+        imageButtonPrevious = findViewById(R.id.song_previous);
+        textViewSongName = findViewById(R.id.song_name);
+        textViewStartTime = findViewById(R.id.seekbar_start);
+        textViewEndTime = findViewById(R.id.seekbar_end);
+        seekBarSong = findViewById(R.id.song_seekbar);
 
-        player=new MediaPlayer();
+        player = new MediaPlayer();
+        player.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
-        playMedia=new PlayMedia();
+        playMedia = new PlayMedia();
+
+        audioManager=(AudioManager)getSystemService(Context.AUDIO_SERVICE);
+        audio_play_result=audioManager.requestAudioFocus(this,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN);
 
         myHandler = new Handler();
         seekBarSong.setProgress((int) starttime);
@@ -81,64 +87,59 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.addTab(tabLayout.newTab().setText("Home"));
         tabLayout.addTab(tabLayout.newTab().setText("Chat"));
 
-        viewPager=findViewById(R.id.viewpager);
-        ViewPagerAdapter viewPagerAdapter=new ViewPagerAdapter(getSupportFragmentManager(),tabLayout.getTabCount());
+        viewPager = findViewById(R.id.viewpager);
+        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager(), tabLayout.getTabCount());
         viewPager.setAdapter(viewPagerAdapter);
 
         viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
 
 
-        SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
-
-
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
 
         //-------------get song details from database------------
-        DatabaseReference databaseReferenceGetSong=FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid",""));
+        DatabaseReference databaseReferenceGetSong = FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid", ""));
         databaseReferenceGetSong.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                currentSongPos=Integer.parseInt(Objects.requireNonNull(dataSnapshot.child("currentSongPosition").getValue()).toString());
-                currentSong=Objects.requireNonNull(dataSnapshot.child("currentSong").getValue()).toString();
-                currentSongUrl=Objects.requireNonNull(dataSnapshot.child("currentSongUrl").getValue()).toString();
-                isButtonPressed=Integer.parseInt(Objects.requireNonNull(dataSnapshot.child("isButtonPressed").getValue()).toString());
+                currentSongPos = Integer.parseInt(Objects.requireNonNull(dataSnapshot.child("currentSongPosition").getValue()).toString());
+                currentSong = Objects.requireNonNull(dataSnapshot.child("currentSong").getValue()).toString();
+                currentSongUrl = Objects.requireNonNull(dataSnapshot.child("currentSongUrl").getValue()).toString();
+                isButtonPressed = Integer.parseInt(Objects.requireNonNull(dataSnapshot.child("isButtonPressed").getValue()).toString());
                 Log.i("details", Objects.requireNonNull(dataSnapshot.child("currentSong").getValue()).toString());
                 Log.i("details", Objects.requireNonNull(dataSnapshot.child("currentSongPosition").getValue()).toString());
                 Log.i("details", Objects.requireNonNull(dataSnapshot.child("currentSongUrl").getValue()).toString());
-                SharedPreferences.Editor editor=preferences.edit();
-                editor.putInt("currentSongPosition",currentSongPos);
-                editor.putString("currentSong",currentSong);
-                editor.putString("currentSongUrl",currentSongUrl);
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putInt("currentSongPosition", currentSongPos);
+                editor.putString("currentSong", currentSong);
+                editor.putString("currentSongUrl", currentSongUrl);
                 editor.commit();
-                if(currentSongPos==-1 && HomeFragment.songList.size()>0)
-                {
-                    Log.i("i am here", "yes");
-                    currentSongPos=currentSongPos+1;
-                    DatabaseReference databaseReference=FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid",""));
-                    Map<String,Object> taskMap=new HashMap<>();
-                    taskMap.put("currentSongPosition",String.valueOf(currentSongPos));
-                    taskMap.put("currentSong",HomeFragment.songList.get(currentSongPos));
-                    taskMap.put("currentSongUrl",HomeFragment.songListUrl.get(currentSongPos));
+                if (currentSongPos == -1 && HomeFragment.songList.size() > 0) {
+                    currentSongPos = currentSongPos + 1;
+                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid", ""));
+                    Map<String, Object> taskMap = new HashMap<>();
+                    taskMap.put("currentSongPosition", String.valueOf(currentSongPos));
+                    taskMap.put("currentSong", HomeFragment.songList.get(currentSongPos));
+                    taskMap.put("currentSongUrl", HomeFragment.songListUrl.get(currentSongPos));
                     databaseReference.updateChildren(taskMap);
-                    playMedia.playVideoFromUrl(HomeFragment.songListUrl.get(currentSongPos),MainActivity.this);
+                    playMedia.playVideoFromUrl(HomeFragment.songListUrl.get(currentSongPos), MainActivity.this);
+                    Toast.makeText(MainActivity.this, "Now Playing: "+HomeFragment.songList.get(currentSongPos), Toast.LENGTH_SHORT).show();
                     textViewSongName.setText(HomeFragment.songList.get(currentSongPos));
-                    init=0;
-                }
-                else
-                {
-                    if(isButtonPressed==1) {
-                        DatabaseReference databaseReference=FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid",""));
-                        Map<String,Object> taskMap=new HashMap<>();
-                        taskMap.put("isButtonPressed","0");
+                    init = 0;
+                } else {
+                    if (isButtonPressed == 1) {
+                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid", ""));
+                        Map<String, Object> taskMap = new HashMap<>();
+                        taskMap.put("isButtonPressed", "0");
                         databaseReference.updateChildren(taskMap);
                         playMedia.playVideoFromUrl(currentSongUrl, MainActivity.this);
+                        Toast.makeText(MainActivity.this, "Now Playing: "+currentSong, Toast.LENGTH_SHORT).show();
                         textViewSongName.setText(currentSong);
-                    }
-                    else if(init==1 && HomeFragment.songList.size()>0)
-                    {
-                        playMedia.playVideoFromUrl(HomeFragment.songListUrl.get(currentSongPos),MainActivity.this);
+                    } else if (init == 1 && HomeFragment.songList.size() > 0) {
+                        playMedia.playVideoFromUrl(HomeFragment.songListUrl.get(currentSongPos), MainActivity.this);
                         textViewSongName.setText(HomeFragment.songList.get(currentSongPos));
-                        init=0;
+                        Toast.makeText(MainActivity.this, "Now Playing: "+HomeFragment.songList.get(currentSongPos), Toast.LENGTH_SHORT).show();
+                        init = 0;
                     }
                 }
             }
@@ -148,7 +149,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
 
 
         //--------------------Tablayout listener-------------------------
@@ -173,7 +173,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
-                slideuparrow.setRotation(slideOffset*180);
+                slideuparrow.setRotation(slideOffset * 180);
 
             }
 
@@ -186,8 +186,7 @@ public class MainActivity extends AppCompatActivity {
         imageButtonPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!player.isPlaying())
-                {
+                if (!player.isPlaying()) {
                     player.start();
                 }
                 imageButtonPlay.setVisibility(View.GONE);
@@ -198,8 +197,7 @@ public class MainActivity extends AppCompatActivity {
         imageButtonPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(player.isPlaying())
-                {
+                if (player.isPlaying()) {
                     player.pause();
                 }
                 imageButtonPlay.setVisibility(View.VISIBLE);
@@ -210,18 +208,16 @@ public class MainActivity extends AppCompatActivity {
         imageButtonNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(currentSongPos==HomeFragment.songList.size()-1)
-                {
+                if (currentSongPos == HomeFragment.songList.size() - 1) {
                     Toast.makeText(MainActivity.this, "End Of Songs! Add new ones!", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    currentSongPos=currentSongPos+1;
-                    DatabaseReference databaseReference=FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid",""));
-                    Map<String,Object> taskMap=new HashMap<>();
-                    taskMap.put("currentSongPosition",String.valueOf(currentSongPos));
-                    taskMap.put("currentSong",HomeFragment.songList.get(currentSongPos));
-                    taskMap.put("currentSongUrl",HomeFragment.songListUrl.get(currentSongPos));
-                    taskMap.put("isButtonPressed","1");
+                } else {
+                    currentSongPos = currentSongPos + 1;
+                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid", ""));
+                    Map<String, Object> taskMap = new HashMap<>();
+                    taskMap.put("currentSongPosition", String.valueOf(currentSongPos));
+                    taskMap.put("currentSong", HomeFragment.songList.get(currentSongPos));
+                    taskMap.put("currentSongUrl", HomeFragment.songListUrl.get(currentSongPos));
+                    taskMap.put("isButtonPressed", "1");
                     databaseReference.updateChildren(taskMap);
                 }
             }
@@ -231,18 +227,16 @@ public class MainActivity extends AppCompatActivity {
         imageButtonPrevious.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(currentSongPos==0)
-                {
+                if (currentSongPos <= 0) {
                     Toast.makeText(MainActivity.this, "Starting of songs", Toast.LENGTH_SHORT).show();
-                }
-                else {
-                    currentSongPos=currentSongPos-1;
-                    DatabaseReference databaseReference=FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid",""));
-                    Map<String,Object> taskMap=new HashMap<>();
-                    taskMap.put("currentSongPosition",String.valueOf(currentSongPos));
-                    taskMap.put("currentSong",HomeFragment.songList.get(currentSongPos));
-                    taskMap.put("currentSongUrl",HomeFragment.songListUrl.get(currentSongPos));
-                    taskMap.put("isButtonPressed","1");
+                } else {
+                    currentSongPos = currentSongPos - 1;
+                    DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid", ""));
+                    Map<String, Object> taskMap = new HashMap<>();
+                    taskMap.put("currentSongPosition", String.valueOf(currentSongPos));
+                    taskMap.put("currentSong", HomeFragment.songList.get(currentSongPos));
+                    taskMap.put("currentSongUrl", HomeFragment.songListUrl.get(currentSongPos));
+                    taskMap.put("isButtonPressed", "1");
                     databaseReference.updateChildren(taskMap);
                 }
             }
@@ -251,8 +245,7 @@ public class MainActivity extends AppCompatActivity {
         seekBarSong.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(player!=null & fromUser)
-                {
+                if (player != null & fromUser) {
                     player.seekTo(progress);
                 }
             }
@@ -268,7 +261,6 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
-
 
     }
 
@@ -297,20 +289,6 @@ public class MainActivity extends AppCompatActivity {
         NetworkInfo activeNetworkInfo=connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo!=null && activeNetworkInfo.isConnected();
     }
-    public void getCurrentSongDetails(DataSnapshot dataSnapshot)
-    {
-        if(dataSnapshot!=null) {
-            for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                String songPos, songName, songYoutubeUrl;
-                songPos = Objects.requireNonNull(ds.child("currentSongPosition").getValue()).toString();
-                songName = Objects.requireNonNull(ds.child("currentSong").getValue()).toString();
-                songYoutubeUrl = Objects.requireNonNull(ds.child("currentSongUrl").getValue()).toString();
-                Log.i("songdetails", songPos);
-                Log.i("songdetails", songName);
-                Log.i("songdetails", songYoutubeUrl);
-            }
-        }
-    }
     @Override
     public void onBackPressed()
     {
@@ -321,12 +299,26 @@ public class MainActivity extends AppCompatActivity {
         else if(onBackPressed+2000 > System.currentTimeMillis())
         {
             super.onBackPressed();
-            return;
         }
         else {
             Toast.makeText(this, "Press Back Again!", Toast.LENGTH_SHORT).show();
             onBackPressed=System.currentTimeMillis();
         }
     }
+    //--------------audio focus change------------------
+    @Override
+    public void onAudioFocusChange(int focusChange) {
+        if (focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+            player.pause();
+        } else if (focusChange == AudioManager.AUDIOFOCUS_GAIN) {
+            player.start();
+        } else if (focusChange == AudioManager.AUDIOFOCUS_LOSS) {
+            player.pause();
+        }
+    }
 
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        Toast.makeText(this, "Error occured. Possibly due to Internet Disconnection.", Toast.LENGTH_LONG).show();
+    }
 }

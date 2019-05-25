@@ -21,10 +21,7 @@ import at.huber.youtubeExtractor.VideoMeta;
 import at.huber.youtubeExtractor.YouTubeExtractor;
 import at.huber.youtubeExtractor.YtFile;
 
-import static com.example.darshanpc.musicshare.MainActivity.currentSong;
 import static com.example.darshanpc.musicshare.MainActivity.currentSongPos;
-import static com.example.darshanpc.musicshare.MainActivity.currentSongUrl;
-import static com.example.darshanpc.musicshare.MainActivity.textViewSongName;
 
 
 public class PlayMedia {
