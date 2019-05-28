@@ -55,8 +55,11 @@ public class PlayMedia {
         }
         else if (ytFiles.get(itags[6]) != null) {
             return ytFiles.get(itags[6]);
+        } else if (ytFiles.get(itags[7])!=null) {
+            return ytFiles.get(itags[7]);
         }
-        return ytFiles.get(itags[7]);
+        Toast.makeText(context, "Sorry! Failure Occured. Try another song.", Toast.LENGTH_SHORT).show();
+        return null;
     }
 
     public class asynctask extends AsyncTask<Void,Void,Void>
@@ -96,6 +99,7 @@ public class PlayMedia {
                                     } else {
                                         MainActivity.textViewEndTime.setText("0" + minutes + ":" + seconds);
                                     }
+                                    Toast.makeText(context, "Now Playing: "+HomeFragment.songList.get(currentSongPos), Toast.LENGTH_SHORT).show();
                                 }
                             });
                             MainActivity.player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {

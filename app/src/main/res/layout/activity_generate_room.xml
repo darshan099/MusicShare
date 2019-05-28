@@ -28,6 +28,7 @@
             android:id="@+id/radiobuttonJoinRoom"
             android:text="Join Room"/>
     </RadioGroup>
+
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -45,6 +46,27 @@
         android:paddingRight="20dp"
         android:visibility="gone"
         android:id="@+id/generateRoomId"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_gravity="center_horizontal"
+        android:orientation="horizontal">
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:background="#00000000"
+            android:visibility="gone"
+            android:id="@+id/clipboard_icon"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_content_copy_black_24dp"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:id="@+id/clipboard_text"
+            android:visibility="gone"
+            android:textSize="20sp"
+            android:layout_height="wrap_content"
+            android:text="Click to copy room id"/>
+    </LinearLayout>
     <TextView
         android:layout_width="match_parent"
         android:padding="20dp"

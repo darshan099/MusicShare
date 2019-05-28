@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements AudioManager.OnAu
                 Log.i("details", Objects.requireNonNull(dataSnapshot.child("currentSong").getValue()).toString());
                 Log.i("details", Objects.requireNonNull(dataSnapshot.child("currentSongPosition").getValue()).toString());
                 Log.i("details", Objects.requireNonNull(dataSnapshot.child("currentSongUrl").getValue()).toString());
+
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putInt("currentSongPosition", currentSongPos);
                 editor.putString("currentSong", currentSong);
@@ -123,9 +124,11 @@ public class MainActivity extends AppCompatActivity implements AudioManager.OnAu
                     taskMap.put("currentSongUrl", HomeFragment.songListUrl.get(currentSongPos));
                     databaseReference.updateChildren(taskMap);
                     playMedia.playVideoFromUrl(HomeFragment.songListUrl.get(currentSongPos), MainActivity.this);
-                    Toast.makeText(MainActivity.this, "Now Playing: "+HomeFragment.songList.get(currentSongPos), Toast.LENGTH_SHORT).show();
+
                     textViewSongName.setText(HomeFragment.songList.get(currentSongPos));
                     init = 0;
+
+
                 } else {
                     if (isButtonPressed == 1) {
                         DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid", ""));
@@ -133,13 +136,13 @@ public class MainActivity extends AppCompatActivity implements AudioManager.OnAu
                         taskMap.put("isButtonPressed", "0");
                         databaseReference.updateChildren(taskMap);
                         playMedia.playVideoFromUrl(currentSongUrl, MainActivity.this);
-                        Toast.makeText(MainActivity.this, "Now Playing: "+currentSong, Toast.LENGTH_SHORT).show();
                         textViewSongName.setText(currentSong);
+
                     } else if (init == 1 && HomeFragment.songList.size() > 0) {
                         playMedia.playVideoFromUrl(HomeFragment.songListUrl.get(currentSongPos), MainActivity.this);
                         textViewSongName.setText(HomeFragment.songList.get(currentSongPos));
-                        Toast.makeText(MainActivity.this, "Now Playing: "+HomeFragment.songList.get(currentSongPos), Toast.LENGTH_SHORT).show();
                         init = 0;
+
                     }
                 }
             }
@@ -320,5 +323,21 @@ public class MainActivity extends AppCompatActivity implements AudioManager.OnAu
     @Override
     public void uncaughtException(Thread t, Throwable e) {
         Toast.makeText(this, "Error occured. Possibly due to Internet Disconnection.", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+            textViewSongName.setText(currentSong);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 }

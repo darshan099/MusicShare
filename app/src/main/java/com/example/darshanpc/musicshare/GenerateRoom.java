@@ -1,5 +1,7 @@
 package com.example.darshanpc.musicshare;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -16,6 +18,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,7 +32,8 @@ import com.google.firebase.database.ValueEventListener;
 public class GenerateRoom extends AppCompatActivity {
 
     RadioButton radioButtonJoin,radioButtonCreate;
-    TextView textViewCreateId;
+    TextView textViewCreateId,textViewClipboard;
+    ImageButton imageButtonClipboard;
     TextView textViewRoomCreateHint,textViewRoomJoinHint;
     EditText editTextEnterId;
     Button submitRoomId;
@@ -38,6 +42,8 @@ public class GenerateRoom extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_generate_room);
 
+        textViewClipboard=findViewById(R.id.clipboard_text);
+        imageButtonClipboard=findViewById(R.id.clipboard_icon);
         textViewRoomJoinHint=findViewById(R.id.room_join_hint);
         textViewRoomCreateHint=findViewById(R.id.room_create_hint);
         radioButtonJoin=findViewById(R.id.radiobuttonJoinRoom);
@@ -76,6 +82,8 @@ public class GenerateRoom extends AppCompatActivity {
                     textViewRoomCreateHint.setVisibility(View.GONE);
                     textViewCreateId.setVisibility(View.GONE);
                     editTextEnterId.setVisibility(View.VISIBLE);
+                    imageButtonClipboard.setVisibility(View.GONE);
+                    textViewClipboard.setVisibility(View.GONE);
                 }
             }
         });
@@ -91,6 +99,8 @@ public class GenerateRoom extends AppCompatActivity {
                     textViewCreateId.setText(time_string);
                     textViewRoomJoinHint.setVisibility(View.GONE);
                     textViewRoomCreateHint.setVisibility(View.VISIBLE);
+                    imageButtonClipboard.setVisibility(View.VISIBLE);
+                    textViewClipboard.setVisibility(View.VISIBLE);
                 }
             }
         });
@@ -147,6 +157,41 @@ public class GenerateRoom extends AppCompatActivity {
                     {
                         Toast.makeText(GenerateRoom.this, "Connect To Internet", Toast.LENGTH_SHORT).show();
                     }
+                }
+            }
+        });
+
+        //-----------------clipboard icon listener-------------------
+        imageButtonClipboard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ClipboardManager clipboardManager=(ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+                ClipData clipData=ClipData.newPlainText("room-id",textViewCreateId.getText().toString());
+                if (clipboardManager != null) {
+                    clipboardManager.setPrimaryClip(clipData);
+                    Toast.makeText(GenerateRoom.this, "Room Id Copied", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(GenerateRoom.this, "Error in copying room id", Toast.LENGTH_SHORT).show();
+                }
+
+            }
+        });
+
+        //------------------clipboard text listener--------------------
+        textViewClipboard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ClipboardManager clipboardManager=(ClipboardManager)getSystemService(CLIPBOARD_SERVICE);
+                ClipData clipData=ClipData.newPlainText("room-id",textViewCreateId.getText().toString());
+                if (clipboardManager != null) {
+                    clipboardManager.setPrimaryClip(clipData);
+                    Toast.makeText(GenerateRoom.this, "Room Id Copied", Toast.LENGTH_SHORT).show();
+                }
+                else
+                {
+                    Toast.makeText(GenerateRoom.this, "Error in copying room id", Toast.LENGTH_SHORT).show();
                 }
             }
         });
