@@ -149,6 +149,8 @@ public class GenerateRoom extends AppCompatActivity {
                         editor.putString("roomid", textViewCreateId.getText().toString());
                         editor.putBoolean("isRoomCreator", true);
                         editor.commit();
+                        HomeFragment.songList.clear();
+                        HomeFragment.songListUrl.clear();
                         Log.i("RoomId", textViewCreateId.getText().toString());
                         Intent intent=new Intent(GenerateRoom.this,MainActivity.class);
                                     startActivity(intent);

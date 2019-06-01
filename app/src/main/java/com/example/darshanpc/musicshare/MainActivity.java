@@ -53,6 +53,12 @@ public class MainActivity extends AppCompatActivity implements AudioManager.OnAu
     double starttime=0;
     SlidingUpPanelLayout slidingPanelLayout;
     ViewPager viewPager;
+    /**
+     * getValueEventListener is used to get songs playing currently across all devices
+     * and play them locally.
+     */
+    ValueEventListener getSongValueEventListener;
+    DatabaseReference databaseReferenceGetSong;
     @SuppressLint("StaticFieldLeak")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +75,7 @@ public class MainActivity extends AppCompatActivity implements AudioManager.OnAu
         textViewStartTime = findViewById(R.id.seekbar_start);
         textViewEndTime = findViewById(R.id.seekbar_end);
         seekBarSong = findViewById(R.id.song_seekbar);
+
 
         player = new MediaPlayer();
         player.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -98,8 +105,9 @@ public class MainActivity extends AppCompatActivity implements AudioManager.OnAu
 
 
         //-------------get song details from database------------
-        DatabaseReference databaseReferenceGetSong = FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid", ""));
-        databaseReferenceGetSong.addValueEventListener(new ValueEventListener() {
+        databaseReferenceGetSong = FirebaseDatabase.getInstance().getReference().child(preferences.getString("roomid", ""));
+
+        getSongValueEventListener=new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 currentSongPos = Integer.parseInt(Objects.requireNonNull(dataSnapshot.child("currentSongPosition").getValue()).toString());
@@ -151,8 +159,9 @@ public class MainActivity extends AppCompatActivity implements AudioManager.OnAu
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
-        });
+        };
 
+        databaseReferenceGetSong.addValueEventListener(getSongValueEventListener);
 
         //--------------------Tablayout listener-------------------------
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -272,17 +281,23 @@ public class MainActivity extends AppCompatActivity implements AudioManager.OnAu
         @SuppressLint("SetTextI18n")
         @Override
         public void run() {
-            starttime = player.getCurrentPosition();
-            seekBarSong.setProgress((int) starttime);
-            String seconds = String.valueOf(((int) starttime % 60000) / 1000);
-            String minutes = String.valueOf(((int) starttime / 60000));
+            try {
+                starttime = player.getCurrentPosition();
+                seekBarSong.setProgress((int) starttime);
+                String seconds = String.valueOf(((int) starttime % 60000) / 1000);
+                String minutes = String.valueOf(((int) starttime / 60000));
 
-            if (seconds.length() == 1) {
-                textViewStartTime.setText("0" + minutes + ":0" + seconds);
-            } else {
-                textViewStartTime.setText("0" + minutes + ":" + seconds);
+                if (seconds.length() == 1) {
+                    textViewStartTime.setText("0" + minutes + ":0" + seconds);
+                } else {
+                    textViewStartTime.setText("0" + minutes + ":" + seconds);
+                }
+                myHandler.postDelayed(this, 100);
             }
-            myHandler.postDelayed(this, 100);
+            catch (IllegalStateException e)
+            {
+                e.printStackTrace();
+            }
         }
     };
     //-----------------check internet connection-------------------------
@@ -326,18 +341,11 @@ public class MainActivity extends AppCompatActivity implements AudioManager.OnAu
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-            textViewSongName.setText(currentSong);
-    }
-
-    @Override
     protected void onPause() {
+        databaseReferenceGetSong.removeEventListener(getSongValueEventListener);
+        myHandler.removeCallbacks(UpdateSongTime);
+        player.stop();
+        player.release();
         super.onPause();
     }
 }

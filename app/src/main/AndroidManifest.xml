@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".MainActivity">
+        <activity android:name=".MainActivity"
+            android:launchMode="singleTask">
 
         </activity>
         <activity android:name=".GenerateRoom">
