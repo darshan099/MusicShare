@@ -2,9 +2,11 @@ package com.example.darshanpc.musicshare;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +22,7 @@ import android.widget.Toast;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
+import java.util.Objects;
 
 public class SearchFragment extends Fragment implements Thread.UncaughtExceptionHandler{
     private EditText searchInput;
@@ -104,8 +107,15 @@ public class SearchFragment extends Fragment implements Thread.UncaughtException
                 return convertView;
             }
         };
+        try {
 
-        videosFound.setAdapter(adapter);
+            videosFound.setAdapter(adapter);
+        }
+        catch (Exception e)
+        {
+            Toast.makeText(getContext(), "Error", Toast.LENGTH_SHORT).show();
+            Log.i("error list", Objects.requireNonNull(e.getLocalizedMessage()));
+        }
     }
 
     @Override

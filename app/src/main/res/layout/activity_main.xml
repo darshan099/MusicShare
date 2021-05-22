@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-        <android.support.design.widget.TabLayout
+        <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabs"
             app:tabGravity="fill"
             app:tabIndicatorHeight="3dp"
@@ -25,7 +25,7 @@
         sothree:umanoPanelHeight="20dp">
 
 
-        <android.support.v4.view.ViewPager
+        <androidx.viewpager.widget.ViewPager
             android:id="@+id/viewpager"
             android:layout_width="match_parent"
             android:layout_marginBottom="90dp"
@@ -75,6 +75,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@+id/seekbar_start"
+                android:saveEnabled="false"
                 android:layout_toStartOf="@+id/seekbar_end"
                 android:paddingLeft="50dp"
                 android:paddingRight="50dp" />
